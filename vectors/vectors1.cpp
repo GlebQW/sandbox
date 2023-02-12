@@ -1,9 +1,10 @@
-// vectors.cpp : This file contains the 'main' function. Program execution
+п»ї// vectors.cpp : This file contains the 'main' function. Program execution
 // begins and ends there.
 //
 
 #include <algorithm>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 std::vector<double> ReadNumbers() {
@@ -44,7 +45,7 @@ void AddNumberToEachItem(std::vector<double>& numbers, double number_to_add) {
 }
 
 /*
- * Возвращает минимальный элемент массива. Если масссив пуст, возвращает 0.0
+ * Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЌР»РµРјРµРЅС‚ РјР°СЃСЃРёРІР°. Р•СЃР»Рё РјР°СЃСЃСЃРёРІ РїСѓСЃС‚, РІРѕР·РІСЂР°С‰Р°РµС‚ 0.0
  */
 double FindMinElement(const std::vector<double>& numbers) {
   if (numbers.empty()) {
@@ -80,31 +81,68 @@ double FindMaxElement(const std::vector<double>& numbers) {
 
 void MultiplyEachItemByNumberOtriz(std::vector<double>& numbers, double scale) {
   for (double& number : numbers) {
-    if (if number < 0) {
-      number += scale;
+    if (number < 0) {
+      number *= scale;
     }
   }
 }
 
-double FindMinElementsSum(const std::vector<double>& numbers, min_sum) {
+double FindMinElementsSum(const std::vector<double>& numbers) {
   if (numbers.empty()) {
     return 0.0;
   }
-  double min_sum = 0;
-  double min_element = numbers.front();
-  for (double number : numbers) {
-    if (number = min_element) {
-        //*magic with iterators*
-      //erase(iterator)^
-    }
-      if (number < min_element) {
-      number = min_element;
-      min_sum += min_element;
-    }
-  }
-  return min_sum;
-}
 
+  // РЎРѕР·РґР°С‘Рј РјР°СЃСЃРёРІ СЂР°Р·РјРµСЂРѕРј min(3, СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР° numbers)
+  std::vector<double> sorted_items(std::min(std::size_t{3}, numbers.size()));
+
+  // РЎРѕСЂС‚РёСЂСѓРµРј СЌР»РµРјРµРЅС‚С‹ numbers С‚Р°Рє, С‡С‚РѕР±С‹ РІ sorted_items Р±С‹Р»Рё
+  // N=sorted_items.size() СЌР»РµРјРµРЅС‚РѕРІ РјР°СЃСЃРёРІР° numbers
+  std::partial_sort_copy(numbers.begin(), numbers.end(), sorted_items.begin(),
+                         sorted_items.end());
+
+  // РІРѕР·РІСЂР°С‰Р°РµРј СЃСѓРјРјСѓ СЌР»РµРјРµРЅС‚РѕРІ sorted_items
+  return std::accumulate(sorted_items.begin(), sorted_items.end(), 0.0);
+
+#if 0
+  // numbers_copy - РєРѕРїРёСЏ numbers
+  std::vector<double> numbers_copy = numbers;
+  std::sort(numbers_copy.begin(), numbers_copy.end());
+
+#if 0
+  double sum = 0.0;
+  if (numbers_copy.size() < 1) {
+    return sum;
+  }
+  sum += numbers_copy[0];
+  if (numbers_copy.size() < 2) {
+    return sum;
+  }
+  sum += numbers_copy[1];
+  if (numbers_copy.size() < 3) {
+    return sum;
+  }
+  sum += numbers_copy[2];
+  return sum;
+#endif
+
+#if 0
+  double sum = 0;
+  int count = 0;
+  for (double number : numbers_copy) {
+    if (count == 3) {
+      break;
+    }
+    sum += number;
+    count++;
+  }
+  return sum;
+#endif
+  return std::accumulate(
+      numbers_copy.begin(),
+      numbers_copy.size() >= 3 ? numbers_copy.begin() + 3 : numbers_copy.end(),
+      0.0);
+#endif
+}
 
 void ProcessNumbers1(std::vector<double>& numbers) {
   double average_of_positives = CalcAverageOfPositives(numbers);
@@ -119,7 +157,7 @@ void ProcessNumbers2(std::vector<double>& numbers) {
 
   if (auto min_it = std::min_element(numbers.begin(), numbers.end());
       min_it != numbers.end()) {
-    // *min_it возвращает ссылку на элемент, на который указывает итератор
+    // *min_it РІРѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СЌР»РµРјРµРЅС‚, РЅР° РєРѕС‚РѕСЂС‹Р№ СѓРєР°Р·С‹РІР°РµС‚ РёС‚РµСЂР°С‚РѕСЂ
     // min_it
     MultiplyEachItemByNumber(numbers, *min_it);
   }
@@ -127,45 +165,51 @@ void ProcessNumbers2(std::vector<double>& numbers) {
 }
 
 void ProcessNumbers3(std::vector<double>& numbers) {
-  double min_element = FindMinElement(numbers, min_element);
-  double max_element = FindMaxElement(numbers, max_element);
-  double a = min_element * max_element;
+#if 0
+  double min_element = FindMinElement(numbers);
+  double max_element = FindMaxElement(numbers);
+#endif
+
+  const auto [min_it, max_it] =
+      std::minmax_element(begin(numbers), end(numbers));
+
+  double a = numbers.empty() ? 0.0 : *min_it * *max_it;
   MultiplyEachItemByNumberOtriz(numbers, a);
 }
 
 void ProcessNumbers4(std::vector<double>& numbers) {
-  double min_sum = FindMinElementsSum(numbers, min_sum);
+  double min_sum = FindMinElementsSum(numbers);
   AddNumberToEachItem(numbers, min_sum);
 }
 
 int main() {
   std::vector<double> numbers = ReadNumbers();
-  ProcessNumbers---(numbers);
+  ProcessNumbers4(numbers);
   PrintVector(numbers);
 }
 
 /*
-Ознакомьтесь с возможностями класса vector библиотеки STL, а также с основными
-алгоритмами STL. Разработайте программу, выполняющую считывание массива чисел с
-плавающей запятой, разделяемых пробелами, из стандартного потока ввода в vector,
-обрабатывающую его согласно заданию Вашего варианта и выводящую в стандартный
-поток полученный массив (разделенный пробелами). В программе должны быть
-выделены функции, выполняющие считывание массива, его обработку  и вывод
-результата.
+РћР·РЅР°РєРѕРјСЊС‚РµСЃСЊ СЃ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЏРјРё РєР»Р°СЃСЃР° vector Р±РёР±Р»РёРѕС‚РµРєРё STL, Р° С‚Р°РєР¶Рµ СЃ РѕСЃРЅРѕРІРЅС‹РјРё
+Р°Р»РіРѕСЂРёС‚РјР°РјРё STL. Р Р°Р·СЂР°Р±РѕС‚Р°Р№С‚Рµ РїСЂРѕРіСЂР°РјРјСѓ, РІС‹РїРѕР»РЅСЏСЋС‰СѓСЋ СЃС‡РёС‚С‹РІР°РЅРёРµ РјР°СЃСЃРёРІР° С‡РёСЃРµР» СЃ
+РїР»Р°РІР°СЋС‰РµР№ Р·Р°РїСЏС‚РѕР№, СЂР°Р·РґРµР»СЏРµРјС‹С… РїСЂРѕР±РµР»Р°РјРё, РёР· СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РїРѕС‚РѕРєР° РІРІРѕРґР° РІ vector,
+РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‰СѓСЋ РµРіРѕ СЃРѕРіР»Р°СЃРЅРѕ Р·Р°РґР°РЅРёСЋ Р’Р°С€РµРіРѕ РІР°СЂРёР°РЅС‚Р° Рё РІС‹РІРѕРґСЏС‰СѓСЋ РІ СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№
+РїРѕС‚РѕРє РїРѕР»СѓС‡РµРЅРЅС‹Р№ РјР°СЃСЃРёРІ (СЂР°Р·РґРµР»РµРЅРЅС‹Р№ РїСЂРѕР±РµР»Р°РјРё). Р’ РїСЂРѕРіСЂР°РјРјРµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ
+РІС‹РґРµР»РµРЅС‹ С„СѓРЅРєС†РёРё, РІС‹РїРѕР»РЅСЏСЋС‰РёРµ СЃС‡РёС‚С‹РІР°РЅРёРµ РјР°СЃСЃРёРІР°, РµРіРѕ РѕР±СЂР°Р±РѕС‚РєСѓ  Рё РІС‹РІРѕРґ
+СЂРµР·СѓР»СЊС‚Р°С‚Р°.
 
-1. Прибавить к каждому элементу массива среднее арифметическое его положительных
-элементов. Если массив пустой, то не модифицировать массив.
+1. РџСЂРёР±Р°РІРёС‚СЊ Рє РєР°Р¶РґРѕРјСѓ СЌР»РµРјРµРЅС‚Сѓ РјР°СЃСЃРёРІР° СЃСЂРµРґРЅРµРµ Р°СЂРёС„РјРµС‚РёС‡РµСЃРєРѕРµ РµРіРѕ РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹С…
+СЌР»РµРјРµРЅС‚РѕРІ. Р•СЃР»Рё РјР°СЃСЃРёРІ РїСѓСЃС‚РѕР№, С‚Рѕ РЅРµ РјРѕРґРёС„РёС†РёСЂРѕРІР°С‚СЊ РјР°СЃСЃРёРІ.
 
-2. Каждый элемент массива должен быть умножен на минимальный элемент исходного
-массива. Если массив пустой, оставить его без изменений.
+2. РљР°Р¶РґС‹Р№ СЌР»РµРјРµРЅС‚ РјР°СЃСЃРёРІР° РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СѓРјРЅРѕР¶РµРЅ РЅР° РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЌР»РµРјРµРЅС‚ РёСЃС…РѕРґРЅРѕРіРѕ
+РјР°СЃСЃРёРІР°. Р•СЃР»Рё РјР°СЃСЃРёРІ РїСѓСЃС‚РѕР№, РѕСЃС‚Р°РІРёС‚СЊ РµРіРѕ Р±РµР· РёР·РјРµРЅРµРЅРёР№.
 
-3. Умножить каждый отрицательный элемент массива на произведение максимального и
-минимального элементов исходного массива. Если массив пуст, оставить его без
-изменений.
+3. РЈРјРЅРѕР¶РёС‚СЊ РєР°Р¶РґС‹Р№ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ СЌР»РµРјРµРЅС‚ РјР°СЃСЃРёРІР° РЅР° РїСЂРѕРёР·РІРµРґРµРЅРёРµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Рё
+РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ СЌР»РµРјРµРЅС‚РѕРІ РёСЃС…РѕРґРЅРѕРіРѕ РјР°СЃСЃРёРІР°. Р•СЃР»Рё РјР°СЃСЃРёРІ РїСѓСЃС‚, РѕСЃС‚Р°РІРёС‚СЊ РµРіРѕ Р±РµР·
+РёР·РјРµРЅРµРЅРёР№.
 
-4. Прибавить к каждому элементу массива сумму трех минимальных элементов
-массива. Если в массиве меньше трёх элементов, то прибавить сумму имеюющихся
-элементов. Если массив пустой, то оставить его без изменений
+4. РџСЂРёР±Р°РІРёС‚СЊ Рє РєР°Р¶РґРѕРјСѓ СЌР»РµРјРµРЅС‚Сѓ РјР°СЃСЃРёРІР° СЃСѓРјРјСѓ С‚СЂРµС… РјРёРЅРёРјР°Р»СЊРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ
+РјР°СЃСЃРёРІР°. Р•СЃР»Рё РІ РјР°СЃСЃРёРІРµ РјРµРЅСЊС€Рµ С‚СЂС‘С… СЌР»РµРјРµРЅС‚РѕРІ, С‚Рѕ РїСЂРёР±Р°РІРёС‚СЊ СЃСѓРјРјСѓ РёРјРµСЋС‰РёС…СЃСЏ
+СЌР»РµРјРµРЅС‚РѕРІ. Р•СЃР»Рё РјР°СЃСЃРёРІ РїСѓСЃС‚РѕР№, С‚Рѕ РѕСЃС‚Р°РІРёС‚СЊ РµРіРѕ Р±РµР· РёР·РјРµРЅРµРЅРёР№
 
 std::partial_sort - https://en.cppreference.com/w/cpp/algorithm/partial_sort
 std::partial_sort_copy -
