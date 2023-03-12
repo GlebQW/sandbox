@@ -1,8 +1,14 @@
+/// ConsoleApplication2.cpp : Этот файл содержит функцию "main". Здесь
+/// начинается и заканчивается выполнение программы.
+//
+
 // count_words.cpp : This file contains the 'main' function. Program execution
 // begins and ends there.
 //
 
 #include <iostream>
+#include <map>
+#include <string>
 
 /*
 Программа должна подсчитать количество вхождений каждого слова в текст, вводимый
@@ -16,17 +22,23 @@ not: 1
 or: 1
 to: 2
 */
+void Print(const std::map<std::string, int>& map) {
+  for (auto& [key, value] : map) {
+    std::cout << key << ": " << value << "\n";
+  }
+}
+
 int main() {
   // 1. Считывать слова и подсчитывать их количество
+  // 2. Вывести частоту встречаемости слов
+  // int n = 1;
+  std::map<std::string, int> count_words;
 
   std::string word;
-  // Чтение будет продолжаться до тех пор, пока пользователь не введёт
-  // последовательность Ctrl+Z
-  while (std::cin >> word) {
-    std::cout << word << " ";
-  }
 
-  /*
-   2. Вывести частоту встречаемости слов
-  */
+  std::cout << "Write any words and press Ctrl+Z to finish:" << std::endl;
+  while (std::cin >> word) {
+    count_words[word]++;
+  }
+  Print(count_words);
 }
