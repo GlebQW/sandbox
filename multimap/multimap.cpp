@@ -16,13 +16,13 @@ enum class AnimalType {
 void PlayWithMap() {
   std::map<std::string, AnimalType> animal_types;
   animal_types["cat"] = AnimalType::MAMMAL;
-  // Вставляет пару "dog"/AnimalType::MAMMAL
+  // Р’СЃС‚Р°РІР»СЏРµС‚ РїР°СЂСѓ "dog"/AnimalType::MAMMAL
   animal_types.insert({"dog", AnimalType::MAMMAL});
-  // Создаёт элемент из ключа и значения
+  // РЎРѕР·РґР°С‘С‚ СЌР»РµРјРµРЅС‚ РёР· РєР»СЋС‡Р° Рё Р·РЅР°С‡РµРЅРёСЏ
   animal_types.emplace("eagle", AnimalType::BIRD);
 
-  // insert возвращает пару: итератор на элемент с этим ключом и bool (была ли
-  // вставка)
+  // insert РІРѕР·РІСЂР°С‰Р°РµС‚ РїР°СЂСѓ: РёС‚РµСЂР°С‚РѕСЂ РЅР° СЌР»РµРјРµРЅС‚ СЃ СЌС‚РёРј РєР»СЋС‡РѕРј Рё bool (Р±С‹Р»Р° Р»Рё
+  // РІСЃС‚Р°РІРєР°)
   auto insertion_result = animal_types.insert({"eagle", AnimalType::FISH});
   std::cout << "Eagle has been inserted: " << std::boolalpha
             << insertion_result.second << std::endl;
@@ -31,11 +31,11 @@ void PlayWithMap() {
 
   auto [iter, inserted] = animal_types.emplace("spider", AnimalType::SPIDER);
   std::cout << "Spider has been inserted: " << inserted << std::endl;
-  // *iter возвращает ссылку на объект, на который ссылаетя итератор iter
-  // в нашем случае - на элемент map, то есть на пару ключ-значение
-  // С помощью structured binding
-  // (https://en.cppreference.com/w/cpp/language/structured_binding) привязываем
-  // элементы этой пары к именам name и type
+  // *iter РІРѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РѕР±СЉРµРєС‚, РЅР° РєРѕС‚РѕСЂС‹Р№ СЃСЃС‹Р»Р°РµС‚СЏ РёС‚РµСЂР°С‚РѕСЂ iter
+  // РІ РЅР°С€РµРј СЃР»СѓС‡Р°Рµ - РЅР° СЌР»РµРјРµРЅС‚ map, С‚Рѕ РµСЃС‚СЊ РЅР° РїР°СЂСѓ РєР»СЋС‡-Р·РЅР°С‡РµРЅРёРµ
+  // РЎ РїРѕРјРѕС‰СЊСЋ structured binding
+  // (https://en.cppreference.com/w/cpp/language/structured_binding) РїСЂРёРІСЏР·С‹РІР°РµРј
+  // СЌР»РµРјРµРЅС‚С‹ СЌС‚РѕР№ РїР°СЂС‹ Рє РёРјРµРЅР°Рј name Рё type
   auto& [name, type] = *iter;
   std::cout << name << ": " << static_cast<int>(type) << std::endl;
 }
@@ -56,10 +56,25 @@ void PlayWithMultimap() {
   student_birth_year.emplace("Kuvshinov", 2023);
   PrintMultimap(student_birth_year);
 
-  auto [start, end] = student_birth_year.equal_range("Kuvshinov");
-  for (auto i = start; i != end; ++i) {
-    auto& [name, birth_year] = *i;
-    std::cout << name << ": " << birth_year << '\n';
+  {
+    // Р’РѕР·РІСЂР°С‰Р°РµС‚ РґРёР°РїР°Р·РѕРЅ [start, end), СЌРєРІРёРІР°Р»РµРЅС‚РЅС‹С… Р·РЅР°С‡РµРЅРёСЋ "Kuvshinov"
+    auto [start, end] = student_birth_year.equal_range("Kuvshinov");
+    for (auto i = start; i != end; ++i) {
+      auto& [name, birth_year] = *i;
+      std::cout << name << ": " << birth_year << '\n';
+    }
+  }
+  {
+    auto [start, end] = student_birth_year.equal_range("Cow");
+    if (start == end) {
+      // РљРѕСЂРѕРІР° РЅР° РЅР°Р№РґРµРЅР°, РїРѕСЌС‚РѕРјСѓ start Р±СѓРґРµС‚ СЂР°РІРµРЅ end
+      std::cout << "Cow is not found in student_birth_year" << std::endl;
+    }
+    // Р­С‚РѕС‚ С†РёРєР» РЅРё СЂР°Р·Сѓ РЅРµ РІС‹РїРѕР»РЅРёС‚СЃСЏ
+    for (auto i = start; i != end; ++i) {
+      auto& [name, birth_year] = *i;
+      std::cout << name << ": " << birth_year << '\n';
+    }
   }
 }
 
