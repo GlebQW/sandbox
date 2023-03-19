@@ -3,27 +3,60 @@
 //
 
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 
-int main() {
-  std::string translations_string;
-  std::cout << "Unknown word. Please enter translations (comma-separated):"
-            << std::endl;
+// Пример использования istringstream
+// https://wandbox.org/permlink/p3N29JOqLCfeaM5N
 
-  if (!std::getline(std::cin, translations_string)) {
-    // Пользователь ввёл Ctrl+Z
-    return 0;
+using Dictionary = std::multimap<std::string, std::string>;
+
+void PrintTranslations(Dictionary::const_iterator start,
+                       Dictionary::const_iterator end) {
+  std::cout << "Translations:\n";
+  // i - итератор, указывающий на пару ключ-значение внутри [start, end)
+  for (auto i = start; i != end; ++i) {
+    // Привязываем к именам _ и translation элементы first и second пары, на
+    // которые указывал итератор i
+    auto& [_, translation] = *i;  // Либо так: auto& translation = i->second;
+    std::cout << translation << "\n";
   }
+  std::cout << "\n";
+}
 
-  // Поток, который содержит содержимое строки и из которого можно считывать
-  // данные точно так же как и из cin
-  // https://en.cppreference.com/w/cpp/io/basic_istringstream
-  std::istringstream translation_stream{translations_string};
-  std::cout << "Words:" << std::endl;
-  std::string word;  // слово или словосочетание
-  while (std::getline(translation_stream, word, ',')) {
-    std::cout << word << std::endl;
+bool RequestTranslations(Dictionary& dictionary, const std::string& word) {
+  std::cout << "Unknown word. Enter translations (comma-separated)"
+            << "\n";
+  std::string translations_string;
+  if (!std::getline(std::cin, translations_string)) {
+    return false;
+  }
+  std::istringstream translations(translations_string);
+  std::string translation;
+  while (std::getline(translations, translation, ',')) {
+    dictionary.emplace(word, translation);
+  }
+  return true;
+}
+
+int main() {
+  Dictionary dictionary;
+  for (;;) {
+    std::cout << "Enter word: ";
+    std::string word;
+    if (!std::getline(std::cin, word)) {
+      break;
+    }
+
+    // [start, end) содержит все элементы с ключом word
+    auto [start, end] = dictionary.equal_range(word);
+    if (start != end) {
+      PrintTranslations(start, end);
+    } else if (!RequestTranslations(dictionary, word)) {
+      // if (!RequestTranslations(dictionary, word) == false)
+      break;
+    }
   }
 }
 
