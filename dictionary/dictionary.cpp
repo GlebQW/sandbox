@@ -49,7 +49,7 @@ int main() {
       break;
     }
 
-    // [start, end) содержит все элементы с ключом word
+    // Диапазон [start, end) содержит все элементы с ключом word
     auto [start, end] = dictionary.equal_range(word);
     if (start != end) {
       PrintTranslations(start, end);
