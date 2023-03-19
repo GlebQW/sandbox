@@ -62,6 +62,88 @@ int main() {
 
 /*
 
+Дополнительные требоваиня:
+
+Программа при старте должна запросить имя файла словаря. Если пользователь ввёл
+пустую строку в качестве имени файла, то программа должна начать с пустого
+словаря. Если пользователь ввёл непустое имя, то программа должна прочитать с
+диска файл с переводами. Формат файла вы выбираете сами.
+Самый простой вариант - обычный текстовый файл, в котором хранятся пары
+слово-перевод, разделённые двоеточием или другим удобным символом apple:яблоко
+cat:кот
+dog:пёс
+dog:собака
+the red square:красная площадь
+
+Если пользователь вместо слова для перевода ввёл ..., то программа должна
+завершить ввод слов для перевода. Перед выходом программа должна спросить, хочет
+ли пользователь сохранить в файл словарь, если в процессе диалога в словарь были
+добавлены новые слова.
+Если пользователь согласен, то надо сохранить словарь в файл с введённым при
+старте программы именем, а если при старте пользователь ввёл пустое имя файла,
+то надо спросить имя файла и сохранить содержимое словаря в этот файл.
+
+Пример диалога:
+Enter dictionary file name:
+<пользователь вводит пустую строку>
+Enter word:
+cat
+Unknown word. blablabla
+кот,кошка
+
+Enter word:
+cat
+Translations:
+кот
+кошка
+
+Enter word:
+...
+Do you want to save your changes (y/n)?
+y
+Enter dictionary file name:
+dictionary.txt
+<программа сохраинла и вышла>
+
+Следующий запуск:
+Enter dictionary file name:
+dictionary.txt
+Enter word:
+cat
+Translations:
+кот
+кошка
+
+Enter word:
+...
+<программа выходит, не спрашивая про сохранение изменений, так как в словарь не
+вносились новые слова>
+
+
+#include <fstream> // для работы с файловыми потоками
+
+string file_name = "dictionary.txt";
+// открывает файл для чтения (ifstream - input file stream)
+ifstream input_file(file_name);
+можно работать с ним как с cin:
+std::string word_and_translation_str;
+std::getline(input_file, word_and_translation_str);
+дальше из word_and_translation_str можно считать слово и перевод с помощью
+istringstream
+
+
+// открывает файл для записи (ofstream - output file stream)
+ofstream output_file(file_name);
+output_file << word << ":" << translation << "\n";
+https://en.cppreference.com/w/cpp/io/basic_ifstream
+https://en.cppreference.com/w/cpp/io/basic_ofstream
+Примеры:
+https://github.com/alexey-malov/oop/blob/master/samples/01-basics/input-output/main.cpp
+
+*/
+
+/*
+
 Напишите программу "Самообучающийся словарь".
 Пользователь вводит слово или словосочетание, а программа выводит переводы этого
 слова (или словосочетания).
