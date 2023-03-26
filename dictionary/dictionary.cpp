@@ -2,6 +2,7 @@
 // begins and ends there.
 //
 
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -25,27 +26,45 @@ void PrintTranslations(Dictionary::const_iterator start,
   std::cout << "\n";
 }
 
-bool RequestTranslations(Dictionary& dictionary, const std::string& word) {
+enum class RequestTranslationResult {
+  EXIT_REQUESTED,
+  TRANSLATION_WAS_ADDED,
+  TRANSLATION_WAS_NOT_ADDED,
+};
+
+RequestTranslationResult RequestTranslations(Dictionary& dictionary,
+                                             const std::string& word) {
   std::cout << "Unknown word. Enter translations (comma-separated)"
             << "\n";
   std::string translations_string;
   if (!std::getline(std::cin, translations_string)) {
-    return false;
+    return RequestTranslationResult::EXIT_REQUESTED;
   }
+
   std::istringstream translations(translations_string);
   std::string translation;
+  bool translation_was_added = false;
   while (std::getline(translations, translation, ',')) {
     dictionary.emplace(word, translation);
+    translation_was_added = true;
   }
-  return true;
+
+  return translation_was_added
+             ? RequestTranslationResult::TRANSLATION_WAS_ADDED
+             : RequestTranslationResult::TRANSLATION_WAS_NOT_ADDED;
 }
 
-int main() {
-  Dictionary dictionary;
+/*
+   Переводит строки, вводимые пользователем.
+   Возвращает true, если в словарь были внесены изменения и
+   false, если изменения не были внесены
+*/
+[[nodiscard]] bool TranslateUserInput(Dictionary& dictionary) {
+  bool has_changes = false;
   for (;;) {
     std::cout << "Enter word: ";
     std::string word;
-    if (!std::getline(std::cin, word)) {
+    if (!std::getline(std::cin, word) || word == "...") {
       break;
     }
 
@@ -53,16 +72,99 @@ int main() {
     auto [start, end] = dictionary.equal_range(word);
     if (start != end) {
       PrintTranslations(start, end);
-    } else if (!RequestTranslations(dictionary, word)) {
-      // if (!RequestTranslations(dictionary, word) == false)
-      break;
+    } else {
+      switch (RequestTranslations(dictionary, word)) {
+        case RequestTranslationResult::EXIT_REQUESTED:
+          return has_changes;
+        case RequestTranslationResult::TRANSLATION_WAS_ADDED:
+          has_changes = true;
+          break;
+        case RequestTranslationResult::TRANSLATION_WAS_NOT_ADDED:
+          // Пользователь решил не вводить переводы и это нормально
+          break;
+      }
     }
   }
+  return has_changes;
+}
+
+Dictionary ReadDictionary(const std::string& file_name) {
+  Dictionary dictionary;
+  //объявить ifstream, открыть файл
+  //считывать построчно и из каждой строки извлечь слово и перевод
+  //добавить слово и перевод в словарь
+  std::ifstream dictionary_file;
+  dictionary_file.open(file_name);
+
+  for (std::string line; std::getline(dictionary_file, line);) {
+    // либо std::string::npos
+    // чтобы можно было писать if (<объявление переменной>; <проверка условия>)
+    // для проекта нужно включить поддержку C++ 17 или выше
+    if (size_t colon_pos = line.find(':');  //
+        colon_pos != line.npos && colon_pos != 0 &&
+        colon_pos != line.size() - 1) {
+      std::string word = line.substr(0, colon_pos);
+      std::string translation = line.substr(colon_pos + 1);
+      dictionary.emplace(word, translation);
+    }
+  }
+
+  return dictionary;
+}
+
+void SaveDictionary(const Dictionary& dictionary,
+                    const std::string& file_name) {
+  std::ofstream dictionary_file;
+  dictionary_file.open(file_name);
+  for (auto& [word, translation] : dictionary) {
+    dictionary_file << word << ':' << translation << '\n';
+  }
+}
+
+std::string RequestDictionaryFileName() {
+  std::cout << "Enter dictionary file name: ";
+  std::string file_name;
+  std::getline(std::cin, file_name);
+  return file_name;
+}
+
+int main() {
+  /*
+   * Запросить имя файла словаря
+   * Если оно не пустое, то загрузить словарь из файла.
+   * Если пустое, то начать с пустого словаря
+   */
+
+  Dictionary dictionary;
+
+  std::string file_name = RequestDictionaryFileName();
+  if (!file_name.empty()) {
+    dictionary = ReadDictionary(file_name);
+  }
+
+  if (TranslateUserInput(dictionary)) {
+    // Do you want to save your changes (y/n)?
+    std::cout << " Do you want to save your changes (y/n)?";
+
+    if (file_name.empty()) {
+      file_name = RequestDictionaryFileName();
+    }
+    if (!file_name.empty()) {
+      SaveDictionary(dictionary, file_name);
+    }
+  }
+
+  /*
+   * Если в словарь были внесены изменения, то
+   *     Если имя файла было указано, то сохранить словарь в файл
+   *     Если имя не было указано, то спросить имя и сохранить в файл
+   * Если не были внесены изменения, то просто завершить работу
+   */
 }
 
 /*
 
-Дополнительные требоваиня:
+Дополнительные требования:
 
 Программа при старте должна запросить имя файла словаря. Если пользователь ввёл
 пустую строку в качестве имени файла, то программа должна начать с пустого
